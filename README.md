@@ -1,0 +1,2 @@
+# case-go-vatansms
+ .
