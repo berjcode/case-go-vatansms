@@ -12,7 +12,7 @@ func NewDB() (*gorm.DB, error) {
 }
 
 func Migrate(db *gorm.DB) error {
-	if err := db.AutoMigrate(&models.User{}, &models.Plan{}, &models.PlanStatus{}).Error; err != nil {
+	if err := db.AutoMigrate(&models.User{}, &models.Plan{}, &models.PlanStatus{}, &models.Lesson{}).Error; err != nil {
 		return err
 	}
 	return nil

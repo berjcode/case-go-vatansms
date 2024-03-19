@@ -24,8 +24,8 @@ func main() {
 	e.Use(middleware.Recover())
 
 	staticHandler := handlers.NewStaticHandler()
+	database.Migrate(db)
 	e.Static("/static", "static")
-
 	e.GET("/", staticHandler.IndexHTML)
 	e.GET("/register", staticHandler.RegisterHTML)
 	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthenticationMiddleware)
