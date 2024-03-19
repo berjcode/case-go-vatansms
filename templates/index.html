@@ -7,17 +7,17 @@
 </head>
 <body>
 
-<form action="/action_page.php" method="post">
+<form id="loginForm" action="/login" method="post">
   <div class="imgcontainer">
     <img src="/static/image/berjcodelogo.png" height="300" width="300"  alt="Avatar" class="avatar">
   </div>
 
   <div class="container">
     <label for="uname"><b>Kullanıcı Adı Veya Mail</b></label>
-    <input type="text" placeholder="Enter Username" name="uname" required>
+    <input type="text" placeholder="Enter Username" name="userNameAndEmail" required>
 
     <label for="psw"><b>Şifre</b></label>
-    <input type="password" placeholder="Enter Password" name="psw" required>
+    <input type="password" placeholder="Enter Password" name="password" required>
         
     <button type="submit">Giriş Yap</button>
   </div>
@@ -25,6 +25,6 @@
     <span class="psw">Üye Değil Misin <a href="register">Üye Ol?</a></span>
   </div>
 </form>
-
+<script src="/static/js/login.js"></script>
 </body>
 </html>

@@ -19,3 +19,6 @@ func (h *StaticHandler) RegisterHTML(c echo.Context) error {
 func (h *StaticHandler) PlanPageHTML(c echo.Context) error {
 	return c.File("templates/plan.html")
 }
+func (h *StaticHandler) LoginPageHtml(c echo.Context) error {
+	return c.File("templates/index.html")
+}

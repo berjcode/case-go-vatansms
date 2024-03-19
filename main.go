@@ -3,6 +3,7 @@ package main
 import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/handlers"
+	"berjcode/dependency/mymiddleware"
 
 	"github.com/labstack/echo/v4"
 	"github.com/labstack/echo/v4/middleware"
@@ -27,8 +28,9 @@ func main() {
 
 	e.GET("/", staticHandler.IndexHTML)
 	e.GET("/register", staticHandler.RegisterHTML)
-	e.GET("/plan", staticHandler.PlanPageHTML)
+	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthenticationMiddleware)
 	e.POST("/users", handlers.CreateUser)
-
+	e.POST("/login", handlers.Login)
+	e.GET("/login", staticHandler.LoginPageHtml)
 	e.Logger.Fatal(e.Start(":8080"))
 }
