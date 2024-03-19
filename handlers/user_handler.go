@@ -3,10 +3,10 @@
 package handlers
 
 import (
-	"net/http"
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
+	"net/http"
 
 	"github.com/labstack/echo/v4"
 )
@@ -37,12 +37,17 @@ func CreateUser(c echo.Context) error {
 	}
 	defer db.Close()
 
+	var existingUser models.User
+
+	if err := db.Where("user_name = ?", newUser.UserName).Or("email = ?", newUser.Email).First(&existingUser).Error; err == nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Bu kullanıcı zaten mevcut"})
+	}
+
 	salt, err := helpers.GenerateSalt()
 	if err != nil {
 		return err
 	}
 
-	// Şifreyi hash'le
 	hashedPassword := helpers.HashPassword(newUser.PasswordHash, salt)
 
 	newUser.Salt = salt
