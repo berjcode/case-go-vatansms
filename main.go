@@ -22,11 +22,12 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 
+	staticHandler := handlers.NewStaticHandler()
 	e.Static("/static", "static")
 
-	staticHandler := handlers.NewStaticHandler()
-
 	e.GET("/", staticHandler.IndexHTML)
+	e.GET("/register", staticHandler.RegisterHTML)
+	e.GET("/plan", staticHandler.PlanPageHTML)
 	e.POST("/users", handlers.CreateUser)
 
 	e.Logger.Fatal(e.Start(":8080"))
