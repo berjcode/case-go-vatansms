@@ -3,7 +3,6 @@ package models
 import (
 	"berjcode/dependency/common"
 	"time"
-	"gorm.io/gorm"
 )
 
 type Plan struct {
@@ -16,6 +15,5 @@ type Plan struct {
 	EndTime      time.Time  `gorm:"not null"`
 	PlanStatusID uint       `gorm:"not null"`
 	PlanStatus   PlanStatus `gorm:"foreignkey:PlanStatusID"`
-	gorm.Model `gorm:"TableName:plans"`
 	common.EntityBase
 }

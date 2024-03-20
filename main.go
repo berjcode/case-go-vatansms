@@ -34,6 +34,7 @@ func main() {
 	e.POST("/users", handlers.CreateUser)
 	e.POST("/login", handlers.Login)
 	e.GET("/login", staticHandler.LoginPageHtml)
+	e.POST("/userupdate", handlers.UpdateUser, mymiddleware.AuthMiddleware)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

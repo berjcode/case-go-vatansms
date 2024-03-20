@@ -9,7 +9,7 @@
 <body>
     <div class="form-container">
         <h2>Kullanıcı Güncelleme Formu</h2>
-        <form id="userForm">
+        <form id="updateForm">
             <label for="nameSurname">Ad ve Soyad:</label>
             <input type="text" id="nameSurname" name="nameSurname" required><br>
 
@@ -22,9 +22,8 @@
             <label for="passwordHash">Şifre:</label>
             <input type="password" id="passwordHash" name="passwordHash" required><br>
 
-            <input type="submit" value="Kaydet">
+            <input type="submit" value="Güncelle">
         </form>
-        <div id="message"></div>
     </div>
 
     <script>
@@ -32,13 +31,32 @@
         fetch('/getuserdetail')
             .then(response => response.json())
             .then(data => {
-                // Gelen veriyi input alanlarına yerleştir
                 document.getElementById('nameSurname').value = data.NameSurname;
                 document.getElementById('userName').value = data.UserName;
                 document.getElementById('email').value = data.Email;
-                document.getElementById('passwordHash').value = data.PasswordHash;
+                document.getElementById('passwordHash').value = "";
             })
             .catch(error => console.error('Hata:', error));
+
+            document.getElementById('updateForm').addEventListener('submit', function(event) {
+            event.preventDefault(); 
+            const formData = new FormData(this);
+            fetch('/userupdate', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('HTTP error ' + response.status);
+                }
+                return response.json();
+            })
+            .then(data => {
+                alert('Başarılı: Kullanıcı bilgileri güncellendi');
+                window.location.href = '/plan';
+            })
+            .catch(error => console.error('Hata:', error));
+        });
     </script>
 </body>
 </html>

@@ -81,7 +81,7 @@ func GetUserByUsername(c echo.Context) (models.User, error) {
 	username := cookie.Value
 	fmt.Println("xx", username)
 	var user models.User
-	if err := db.Where("user_name = ?", "123").First(&user).Error; err != nil {
+	if err := db.Where("user_name = ?", username).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return models.User{}, echo.NewHTTPError(http.StatusNotFound, "Kullanıcı bulunamadı")
 		}
@@ -89,4 +89,38 @@ func GetUserByUsername(c echo.Context) (models.User, error) {
 	}
 
 	return user, nil
+}
+
+func UpdateUser(c echo.Context) error {
+
+	username := c.FormValue("userName")
+	nameSurname := c.FormValue("nameSurname")
+	email := c.FormValue("email")
+	passwordHash := c.FormValue("passwordHash")
+	fmt.Println("formpasswordHash: ", passwordHash)
+	dbUser, err := GetUserByUsername(c)
+	if err != nil {
+
+		return echo.NewHTTPError(http.StatusNotFound, "Kullanıcı bulunamadı")
+	}
+
+	newPassword := helpers.HashPassword(passwordHash, dbUser.Salt)
+	fmt.Println("Salt: ", dbUser.Salt)
+	fmt.Println("newPassword: ", newPassword)
+	dbUser.UserName = username
+	dbUser.NameSurname = nameSurname
+	dbUser.Email = email
+	dbUser.PasswordHash = newPassword
+
+	db, err := database.NewDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	if err := db.Save(&dbUser).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, map[string]string{"message": "Kullanıcı bilgileri güncellendi"})
 }

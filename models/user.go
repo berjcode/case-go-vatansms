@@ -1,9 +1,6 @@
 package models
 
-import (
-	"berjcode/dependency/common"
-	"gorm.io/gorm"
-)
+import "berjcode/dependency/common"
 
 type User struct {
 	ID           uint   `gorm:"primary_key"`
@@ -13,6 +10,4 @@ type User struct {
 	Salt         string `gorm:"not null;type:longtext"`
 	PasswordHash string `gorm:"not null;type:longtext"`
 	common.EntityBase
-	gorm.Model `gorm:"TableName:users"`
-	
 }
