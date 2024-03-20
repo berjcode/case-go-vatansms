@@ -28,7 +28,7 @@ func main() {
 	e.Static("/static", "static")
 	e.GET("/", staticHandler.IndexHTML)
 	e.GET("/register", staticHandler.RegisterHTML)
-	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthenticationMiddleware)
+	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthMiddleware)
 	e.POST("/users", handlers.CreateUser)
 	e.POST("/login", handlers.Login)
 	e.GET("/login", staticHandler.LoginPageHtml)
