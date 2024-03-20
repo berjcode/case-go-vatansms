@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Detail</title>
+    <link rel="stylesheet" href="/static/css/register.css">
+</head>
+<body>
+    <div class="form-container">
+        <h2>Kullanıcı Güncelleme Formu</h2>
+        <form id="userForm">
+            <label for="nameSurname">Ad ve Soyad:</label>
+            <input type="text" id="nameSurname" name="nameSurname" required><br>
+
+            <label for="userName">Kullanıcı Adı:</label>
+            <input type="text" id="userName" name="userName" required><br>
+
+            <label for="email">E-Posta:</label>
+            <input type="email" id="email" name="email" required><br>
+            
+            <label for="passwordHash">Şifre:</label>
+            <input type="password" id="passwordHash" name="passwordHash" required><br>
+
+            <input type="submit" value="Kaydet">
+        </form>
+        <div id="message"></div>
+    </div>
+
+    <script>
+      
+        fetch('/getuserdetail')
+            .then(response => response.json())
+            .then(data => {
+                // Gelen veriyi input alanlarına yerleştir
+                document.getElementById('nameSurname').value = data.NameSurname;
+                document.getElementById('userName').value = data.UserName;
+                document.getElementById('email').value = data.Email;
+                document.getElementById('passwordHash').value = data.PasswordHash;
+            })
+            .catch(error => console.error('Hata:', error));
+    </script>
+</body>
+</html>

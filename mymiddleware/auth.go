@@ -9,7 +9,8 @@ import (
 func AuthMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 
-		_, err := c.Cookie("user")
+		_, err := c.Cookie("username")
+
 		if err != nil {
 			return c.Redirect(http.StatusSeeOther, "/login")
 		}

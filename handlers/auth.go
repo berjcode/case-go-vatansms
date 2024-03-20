@@ -4,7 +4,6 @@ import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
@@ -33,18 +32,11 @@ func Login(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	user := models.User{
-		UserName:    dbUser.UserName,
-		NameSurname: dbUser.NameSurname,
-	}
-
-	userData, err := json.Marshal(user)
-	if err != nil {
-		return err
-	}
+	cookieValue := dbUser.UserName
 	cookie := http.Cookie{
-		Name:     "user",
-		Value:    string(userData),
+		Name:     "username",
+		Value:    cookieValue,
+		Path:     "/",
 		Expires:  time.Now().Add(24 * time.Hour),
 		HttpOnly: true,
 	}
@@ -52,4 +44,14 @@ func Login(c echo.Context) error {
 	http.SetCookie(c.Response(), &cookie)
 
 	return c.Redirect(http.StatusSeeOther, "/plan")
+}
+
+func ReadCookie(c echo.Context) error {
+	cookie, err := c.Cookie("username")
+	if err != nil {
+		return err
+	}
+	fmt.Println(cookie.Name)
+	fmt.Println(cookie.Value)
+	return c.String(http.StatusOK, "read a cookie")
 }

@@ -29,8 +29,11 @@ func main() {
 	e.GET("/", staticHandler.IndexHTML)
 	e.GET("/register", staticHandler.RegisterHTML)
 	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthMiddleware)
+	e.GET("/userdetail", staticHandler.UserDetailPage, mymiddleware.AuthMiddleware)
+	e.GET("/getuserdetail", staticHandler.UserDetailData)
 	e.POST("/users", handlers.CreateUser)
 	e.POST("/login", handlers.Login)
 	e.GET("/login", staticHandler.LoginPageHtml)
+
 	e.Logger.Fatal(e.Start(":8080"))
 }

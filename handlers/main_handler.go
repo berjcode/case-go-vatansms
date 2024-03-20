@@ -1,6 +1,10 @@
 package handlers
 
-import "github.com/labstack/echo/v4"
+import (
+	"net/http"
+
+	"github.com/labstack/echo/v4"
+)
 
 type StaticHandler struct{}
 
@@ -21,4 +25,15 @@ func (h *StaticHandler) PlanPageHTML(c echo.Context) error {
 }
 func (h *StaticHandler) LoginPageHtml(c echo.Context) error {
 	return c.File("templates/index.html")
+}
+func (h *StaticHandler) UserDetailPage(c echo.Context) error {
+	return c.File("templates/userdetail.html")
+}
+
+func (h *StaticHandler) UserDetailData(c echo.Context) error {
+	user, err := GetUserByUsername(c)
+	if err != nil {
+		return err
+	}
+	return c.JSON(http.StatusOK, user)
 }

@@ -6,8 +6,10 @@ import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
+	"fmt"
 	"net/http"
 
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
 
@@ -21,6 +23,7 @@ func GetAllUsers(c echo.Context) error {
 
 	var users []models.User
 	db.Find(&users)
+
 	return c.JSON(http.StatusOK, users)
 }
 
@@ -58,4 +61,32 @@ func CreateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusCreated, newUser)
+}
+
+type CookieData struct {
+	UserName string `json:"UserName"`
+}
+
+func GetUserByUsername(c echo.Context) (models.User, error) {
+	db, err := database.NewDB()
+	if err != nil {
+		return models.User{}, err
+	}
+	defer db.Close()
+
+	cookie, err := c.Cookie("username")
+	if err != nil {
+		return models.User{}, echo.NewHTTPError(http.StatusUnauthorized, "Kullanıcı adı bulunamadı")
+	}
+	username := cookie.Value
+	fmt.Println("xx", username)
+	var user models.User
+	if err := db.Where("user_name = ?", "123").First(&user).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return models.User{}, echo.NewHTTPError(http.StatusNotFound, "Kullanıcı bulunamadı")
+		}
+		return models.User{}, err
+	}
+
+	return user, nil
 }
