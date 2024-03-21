@@ -37,3 +37,7 @@ func (h *StaticHandler) UserDetailData(c echo.Context) error {
 	}
 	return c.JSON(http.StatusOK, user)
 }
+
+func (h *StaticHandler) LessonPageHtml(c echo.Context) error {
+	return c.File("templates/lesson.html")
+}

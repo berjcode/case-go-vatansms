@@ -7,8 +7,6 @@ import (
 
 type Plan struct {
 	ID           uint       `gorm:"primary_key"`
-	UserID       uint       `gorm:"not null"`
-	User         User       `gorm:"foreignkey:UserID"`
 	LessonID     uint       `gorm:"not null"`
 	Lesson       Lesson     `gorm:"foreignkey:LessonID"`
 	StartTime    time.Time  `gorm:"not null"`
