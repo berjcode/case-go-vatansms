@@ -19,8 +19,7 @@
                 <a class="nav-link active" aria-current="page"  href="/userdetail">Profil</a>
               </li>
           <li class="nav-item">
-            <a class="nav-link active" aria-current="page"  href="/lesson">Plan Adı Veya Ders Oluşturma </a>
-          </li>
+            <a id="lessonLink" class="nav-link active" aria-current="page" href="#">Plan Adı Veya Ders Oluşturma</a>
           
           <li class="nav-item">
             <a class="nav-link active" aria-current="page"   id="logoutButton">Çıkış Yap</a>
@@ -43,6 +42,13 @@
 
     </div>
   </div>
+
+  <script>
+    var lessonID = 3; 
+    var lessonURL = "/lesson?id=" + lessonID;
+    document.getElementById("lessonLink").href = lessonURL;
+</script>
+
 
 
 <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>

@@ -3,7 +3,6 @@ package handlers
 import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/models"
-
 	"net/http"
 	"strconv"
 
@@ -41,5 +40,5 @@ func CreateUserLesson(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, newLesson)
+	return c.Redirect(http.StatusSeeOther, "/plan")
 }
