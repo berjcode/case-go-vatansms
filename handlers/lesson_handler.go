@@ -43,7 +43,7 @@ func CreateUserLesson(c echo.Context) error {
 	return c.Redirect(http.StatusSeeOther, "/plan")
 }
 
-func GetLessonsByUser(c echo.Context) error {
+func GetAllLessonsByUser(c echo.Context) error {
 	userIDStr := c.QueryParam("userID")
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
@@ -56,5 +56,15 @@ func GetLessonsByUser(c echo.Context) error {
 		return err
 	}
 
+	return c.JSON(http.StatusOK, lessons)
+}
+
+func UpdateLesson(c echo.Context) error {
+	var lessons []models.Lesson
+	return c.JSON(http.StatusOK, lessons)
+}
+
+func GetLessonById(c echo.Context) error {
+	var lessons []models.Lesson
 	return c.JSON(http.StatusOK, lessons)
 }

@@ -48,7 +48,7 @@ fetch("/lessons?userID=" + userID)
   var cellDelete = document.createElement("td");
   var deleteLink = document.createElement("a");
   deleteLink.href = "/delete?id=" + lesson.ID; 
-  deleteLink.textContent = "Sil";
+  deleteLink.textContent = "Silll";
   cellDelete.appendChild(deleteLink);
   row.appendChild(cellDelete);
       lessonTableBody.appendChild(row);

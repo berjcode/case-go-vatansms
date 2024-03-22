@@ -9,11 +9,12 @@ import (
 type StaticHandler struct{}
 
 const (
-	IndexHTMLPath      = "templates/index.html"
-	RegisterHTMLPath   = "templates/register.html"
-	PlanPageHTMLPath   = "templates/plan.html"
-	UserDetailPagePath = "templates/userdetail.html"
-	LessonPageHTMLPath = "templates/lesson.html"
+	IndexHTMLPath        = "templates/index.html"
+	RegisterHTMLPath     = "templates/register.html"
+	PlanPageHTMLPath     = "templates/plan.html"
+	UserDetailPagePath   = "templates/userdetail.html"
+	LessonPageHTMLPath   = "templates/lesson.html"
+	LessonDetailPageHtml = "templates/lessondetail.html"
 )
 
 func NewStaticHandler() *StaticHandler {
@@ -50,4 +51,8 @@ func (h *StaticHandler) UserDetailData(c echo.Context) error {
 
 func (h *StaticHandler) LessonPageHtml(c echo.Context) error {
 	return c.File(LessonPageHTMLPath)
+}
+
+func (h *StaticHandler) LessonDetailPageHtml(c echo.Context) error {
+	return c.File(LessonDetailPageHtml)
 }

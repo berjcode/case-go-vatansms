@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
@@ -17,20 +18,22 @@ func Login(c echo.Context) error {
 	}
 	defer db.Close()
 
-	password := c.FormValue("password")
-	username := c.FormValue("userNameAndEmail")
-
-	var dbUser models.User
-	if err := db.Where("user_name = ? OR email = ?", username, username).First(&dbUser).Error; err != nil {
+	var loginForm models.UserLogin
+	if err := c.Bind(&loginForm); err != nil {
 		return echo.ErrBadRequest
 	}
 
-	if !helpers.CheckPassword(password, dbUser.Salt, dbUser.PasswordHash) {
+	var dbUser models.User
+	if err := db.Where("user_name = ? OR email = ?", loginForm.UsernameAndEmail, loginForm.UsernameAndEmail).First(&dbUser).Error; err != nil {
+		return echo.ErrBadRequest
+	}
+
+	if !helpers.CheckPassword(loginForm.Password, dbUser.Salt, dbUser.PasswordHash) {
 		return echo.ErrUnauthorized
 	}
 
 	cookie := helpers.GetCookie("username", dbUser.UserName, time.Now().Add(24*time.Hour))
 	http.SetCookie(c.Response(), cookie)
 
-	return c.Redirect(http.StatusSeeOther, "/plan")
+	return c.JSON(http.StatusOK, map[string]string{"message": constant.SuccessLogin})
 }
