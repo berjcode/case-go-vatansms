@@ -3,10 +3,12 @@ package handlers
 import (
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
+	"berjcode/dependency/dtos"
 	"berjcode/dependency/models"
 	"net/http"
 	"strconv"
 
+	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
 )
 
@@ -65,6 +67,28 @@ func UpdateLesson(c echo.Context) error {
 }
 
 func GetLessonById(c echo.Context) error {
-	var lessons []models.Lesson
-	return c.JSON(http.StatusOK, lessons)
+	id := c.QueryParam("id")
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var lesson models.Lesson
+	if err := db.Where("id = ?", id).First(&lesson).Error; err != nil {
+		if gorm.IsRecordNotFoundError(err) {
+			return echo.NewHTTPError(http.StatusNotFound, constant.UserNameNotFound)
+		}
+		return err
+	}
+
+	lessonDto := &dtos.LessonDto{
+		ID:                lesson.ID,
+		LessonName:        lesson.LessonName,
+		LessonDescription: lesson.LessonDescription,
+		UserID:            lesson.UserID,
+	}
+
+	return c.JSON(http.StatusOK, lessonDto)
 }
