@@ -7,7 +7,6 @@
         return response.json();
       })
       .then(data => {
-        // Kullanıcı kimliğini al
         var userID = data.userIDs[0];
         var lessonURL = "/lesson?userID=" + userID;
 
