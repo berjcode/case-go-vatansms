@@ -3,6 +3,7 @@
 package handlers
 
 import (
+	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
@@ -16,7 +17,7 @@ import (
 
 func GetAllUsers(c echo.Context) error {
 
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
@@ -35,7 +36,7 @@ func CreateUser(c echo.Context) error {
 		return err
 	}
 
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
@@ -44,7 +45,7 @@ func CreateUser(c echo.Context) error {
 	var existingUser models.User
 
 	if err := db.Where("user_name = ?", newUser.UserName).Or("email = ?", newUser.Email).First(&existingUser).Error; err == nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Bu kullanıcı zaten mevcut"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": constant.UserExisting})
 	}
 
 	salt, err := helpers.GenerateSalt()
@@ -69,7 +70,7 @@ type CookieData struct {
 }
 
 func GetUserByUsername(c echo.Context) (models.User, error) {
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return models.User{}, err
 	}
@@ -77,14 +78,13 @@ func GetUserByUsername(c echo.Context) (models.User, error) {
 
 	cookie, err := c.Cookie("username")
 	if err != nil {
-		return models.User{}, echo.NewHTTPError(http.StatusUnauthorized, "Kullanıcı adı bulunamadı")
+		return models.User{}, echo.NewHTTPError(http.StatusUnauthorized, constant.UserNameNotFound)
 	}
 	username := cookie.Value
-	fmt.Println("xx", username)
 	var user models.User
 	if err := db.Where("user_name = ?", username).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
-			return models.User{}, echo.NewHTTPError(http.StatusNotFound, "Kullanıcı bulunamadı")
+			return models.User{}, echo.NewHTTPError(http.StatusNotFound, constant.UserNameNotFound)
 		}
 		return models.User{}, err
 	}
@@ -102,18 +102,16 @@ func UpdateUser(c echo.Context) error {
 	dbUser, err := GetUserByUsername(c)
 	if err != nil {
 
-		return echo.NewHTTPError(http.StatusNotFound, "Kullanıcı bulunamadı")
+		return echo.NewHTTPError(http.StatusNotFound, constant.UserNameNotFound)
 	}
 
 	newPassword := helpers.HashPassword(passwordHash, dbUser.Salt)
-	fmt.Println("Salt: ", dbUser.Salt)
-	fmt.Println("newPassword: ", newPassword)
 	dbUser.UserName = username
 	dbUser.NameSurname = nameSurname
 	dbUser.Email = email
 	dbUser.PasswordHash = newPassword
 
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
@@ -123,14 +121,13 @@ func UpdateUser(c echo.Context) error {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"message": "Kullanıcı bilgileri güncellendi"})
+	return c.JSON(http.StatusOK, map[string]string{"message": constant.UserUpdatedInfo})
 }
 
 func GetUserIDByUserName(c echo.Context) error {
-	// Retrieve the username from the query parameters
 	username := c.QueryParam("username")
 
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
@@ -139,7 +136,7 @@ func GetUserIDByUserName(c echo.Context) error {
 	var userIDs []uint
 	if err := db.Model(&models.User{}).Where("user_name = ?", username).Pluck("id", &userIDs).Error; err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.JSON(http.StatusOK, map[string]string{"message": "No user found with the given username"})
+			return c.JSON(http.StatusOK, map[string]string{"message": constant.UserNameNotFoundForUserName})
 		}
 		return err
 	}

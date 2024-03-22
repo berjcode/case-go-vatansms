@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/models"
 	"net/http"
@@ -12,9 +13,8 @@ import (
 func CreateUserLesson(c echo.Context) error {
 
 	var newLesson models.Lesson
-
-	lessonName := c.FormValue("lessonName")
 	userID := c.FormValue("userID")
+	lessonName := c.FormValue("lessonName")
 	lessonDescription := c.FormValue("lessonDescription")
 
 	userIDInt, err := strconv.ParseUint(userID, 10, 64)
@@ -25,7 +25,7 @@ func CreateUserLesson(c echo.Context) error {
 	newLesson.LessonName = lessonName
 	newLesson.LessonDescription = lessonDescription
 
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
@@ -33,7 +33,7 @@ func CreateUserLesson(c echo.Context) error {
 
 	var existingLesson models.Lesson
 	if err := db.Where("lesson_name = ?", lessonName).Where("user_id = ?", newLesson.UserID).First(&existingLesson).Error; err == nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Bu ders zaten mevcut"})
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": constant.ErrorMessageExistingLesson})
 	}
 
 	if err := db.Create(&newLesson).Error; err != nil {
@@ -44,15 +44,15 @@ func CreateUserLesson(c echo.Context) error {
 }
 
 func GetLessonsByUser(c echo.Context) error {
-	userID := 3
-	db, err := database.NewDB()
+	userIDStr := c.QueryParam("userID")
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
 	var lessons []models.Lesson
-	if err := db.Where("user_id = ?", userID).Find(&lessons).Error; err != nil {
+	if err := db.Where("user_id = ?", userIDStr).Find(&lessons).Error; err != nil {
 		return err
 	}
 

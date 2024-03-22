@@ -1,0 +1,9 @@
+{
+    "Database": {
+        "Username": "root",
+        "Password": "123456",
+        "Host": "localhost",
+        "Port": "3306",
+        "Name": "newdb"
+    }
+}

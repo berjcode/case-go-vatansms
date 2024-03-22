@@ -10,7 +10,7 @@ import (
 )
 
 func main() {
-	db, err := database.NewDB()
+	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		panic("Failed to connect to database")
 	}
