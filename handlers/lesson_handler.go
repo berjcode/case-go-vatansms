@@ -42,3 +42,19 @@ func CreateUserLesson(c echo.Context) error {
 
 	return c.Redirect(http.StatusSeeOther, "/plan")
 }
+
+func GetLessonsByUser(c echo.Context) error {
+	userID := 3
+	db, err := database.NewDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var lessons []models.Lesson
+	if err := db.Where("user_id = ?", userID).Find(&lessons).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, lessons)
+}

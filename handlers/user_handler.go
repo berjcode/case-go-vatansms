@@ -6,6 +6,7 @@ import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -123,4 +124,29 @@ func UpdateUser(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, map[string]string{"message": "Kullanıcı bilgileri güncellendi"})
+}
+
+func GetUserIDByUserName(c echo.Context) error {
+	// Retrieve the username from the query parameters
+	username := c.QueryParam("username")
+
+	db, err := database.NewDB()
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var userIDs []uint
+	if err := db.Model(&models.User{}).Where("user_name = ?", username).Pluck("id", &userIDs).Error; err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return c.JSON(http.StatusOK, map[string]string{"message": "No user found with the given username"})
+		}
+		return err
+	}
+
+	if len(userIDs) == 0 {
+		return c.JSON(http.StatusOK, map[string][]uint{"userIDs": nil})
+	}
+
+	return c.JSON(http.StatusOK, map[string][]uint{"userIDs": userIDs})
 }

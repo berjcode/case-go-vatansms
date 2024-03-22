@@ -36,7 +36,8 @@ func main() {
 	e.GET("/lesson", staticHandler.LessonPageHtml, mymiddleware.AuthMiddleware)
 	e.POST("/login", handlers.Login)
 	e.GET("/login", staticHandler.LoginPageHtml)
+	e.GET("/lessons", handlers.GetLessonsByUser)
 	e.POST("/userupdate", handlers.UpdateUser, mymiddleware.AuthMiddleware)
-
+	e.GET("/userid", handlers.GetUserIDByUserName, mymiddleware.AuthMiddleware)
 	e.Logger.Fatal(e.Start(":8080"))
 }
