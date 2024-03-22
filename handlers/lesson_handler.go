@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/dtos"
@@ -15,18 +16,10 @@ import (
 
 func CreateUserLesson(c echo.Context) error {
 
-	var newLesson models.Lesson
-	userID := c.FormValue("userID")
-	lessonName := c.FormValue("lessonName")
-	lessonDescription := c.FormValue("lessonDescription")
-
-	userIDInt, err := strconv.ParseUint(userID, 10, 64)
-	if err != nil {
-		return err
+	var newLesson dtos.LessonCreateDto
+	if err := c.Bind(&newLesson); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidRequestValid)
 	}
-	newLesson.UserID = uint(userIDInt)
-	newLesson.LessonName = lessonName
-	newLesson.LessonDescription = lessonDescription
 
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
@@ -35,15 +28,15 @@ func CreateUserLesson(c echo.Context) error {
 	defer db.Close()
 
 	var existingLesson models.Lesson
-	if err := db.Where("lesson_name = ?", lessonName).Where("user_id = ?", newLesson.UserID).First(&existingLesson).Error; err == nil {
+	if err := db.Where("lesson_name = ?", newLesson.LessonName).Where("user_id = ?", newLesson.UserID).First(&existingLesson).Error; err == nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": constant.ErrorMessageExistingLesson})
 	}
-
-	if err := db.Create(&newLesson).Error; err != nil {
+	var lesson = mappingLessonCreateDtoToLesson(newLesson)
+	if err := db.Create(&lesson).Error; err != nil {
 		return err
 	}
 
-	return c.Redirect(http.StatusSeeOther, "/plan")
+	return c.JSON(http.StatusCreated, true)
 }
 
 func GetAllLessonsByUser(c echo.Context) error {
@@ -87,12 +80,13 @@ func UpdateLesson(c echo.Context) error {
 
 	lessonData.LessonName = lessonDtoUpdate.LessonName
 	lessonData.LessonDescription = lessonDtoUpdate.LessonDescription
-
+	lessonData.UpdatedBy = lessonDtoUpdate.UpdatedBy
+	lessonData.UpdatedOn = lessonDtoUpdate.UpdatedOn
 	if err := db.Save(&lessonData).Error; err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, map[string]string{"message": constant.UserUpdatedInfo})
+	return c.JSON(http.StatusNoContent, true)
 }
 
 func GetLessonById(c echo.Context) error {
@@ -120,17 +114,6 @@ func GetLessonById(c echo.Context) error {
 	return c.JSON(http.StatusOK, lessonDto)
 }
 
-func mappingLessonToLessonDto(lesson models.Lesson) dtos.LessonDto {
-	lessonDto := dtos.LessonDto{
-		ID:                lesson.ID,
-		LessonName:        lesson.LessonName,
-		LessonDescription: lesson.LessonDescription,
-		UserID:            lesson.UserID,
-	}
-
-	return lessonDto
-}
-
 func getLessonDetailById(id uint) (models.Lesson, error) {
 
 	db, err := database.NewDB("dbconfig.json")
@@ -144,4 +127,29 @@ func getLessonDetailById(id uint) (models.Lesson, error) {
 		return models.Lesson{}, err
 	}
 	return lessonData, nil
+}
+
+func mappingLessonToLessonDto(lesson models.Lesson) dtos.LessonDto {
+	lessonDto := dtos.LessonDto{
+		ID:                lesson.ID,
+		LessonName:        lesson.LessonName,
+		LessonDescription: lesson.LessonDescription,
+		UserID:            lesson.UserID,
+	}
+
+	return lessonDto
+}
+
+func mappingLessonCreateDtoToLesson(lessonCreateDto dtos.LessonCreateDto) models.Lesson {
+
+	lesson := models.Lesson{
+		ID:                lessonCreateDto.ID,
+		LessonName:        lessonCreateDto.LessonName,
+		LessonDescription: lessonCreateDto.LessonDescription,
+		UserID:            lessonCreateDto.UserID,
+		EntityBase: common.EntityBase{
+			CreatedBy: lessonCreateDto.CreatedBy,
+		},
+	}
+	return lesson
 }
