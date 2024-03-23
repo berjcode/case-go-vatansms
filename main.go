@@ -45,6 +45,7 @@ func main() {
 	//Plan
 	e.POST("/plan", handlers.CreatePlan, mymiddleware.AuthMiddleware)
 	e.PUT("/plan", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
+	e.GET("/plan/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
 
 	// e.GET("/", staticHandler.IndexHTML)
 	// e.GET("/login", staticHandler.LoginPageHtml)

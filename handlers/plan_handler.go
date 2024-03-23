@@ -8,6 +8,7 @@ import (
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
 	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo/v4"
@@ -142,4 +143,56 @@ func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
 		},
 	}
 	return lesson
+}
+
+func GetPlanById(c echo.Context) error {
+	paramId := c.Param("id")
+	convertedID, err := strconv.ParseUint(paramId, 10, 64)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidLessonID)
+	}
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	plan, err := getPlanDetailById(uint(convertedID))
+
+	if err != nil {
+		return err
+	}
+
+	var planDto = mappingPlanToPlanDto(plan)
+
+	return c.JSON(http.StatusOK, planDto)
+}
+
+func getPlanDetailById(id uint) (models.Plan, error) {
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return models.Plan{}, err
+	}
+	defer db.Close()
+
+	var plan models.Plan
+	if err := db.First(&plan, id).Error; err != nil {
+		return models.Plan{}, err
+	}
+	return plan, nil
+}
+
+func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
+	planDto := dtos.PlanDto{
+		ID:           plan.ID,
+		LessonID:     plan.LessonID,
+		StartTime:    plan.StartTime,
+		EndTime:      plan.EndTime,
+		PlanStatusID: plan.PlanStatusID,
+	}
+
+	return planDto
 }

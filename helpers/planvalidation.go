@@ -16,6 +16,10 @@ func CreateValidatePlan(planCreateDto dtos.PlanCreateDto) error {
 		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
 	}
 
+	if planCreateDto.EndTime.Before(planCreateDto.StartTime) {
+		return errors.New("end time , startime'dan küçük olamaz")
+	}
+
 	return nil
 }
 
