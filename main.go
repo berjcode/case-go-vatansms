@@ -36,6 +36,11 @@ func main() {
 	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
 	e.GET("/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
 
+	//Plan Status
+	e.POST("/planstatus", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
+	e.PUT("/planstatus", handlers.UpdatePlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/planstatus", handlers.GetAllPlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/planstatus/:id", handlers.GetPlanStatusById, mymiddleware.AuthMiddleware)
 	// e.GET("/", staticHandler.IndexHTML)
 	// e.GET("/login", staticHandler.LoginPageHtml)
 	// e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthMiddleware)
