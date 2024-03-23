@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"net/http"
-
 	"github.com/labstack/echo/v4"
 )
 
@@ -39,14 +37,6 @@ func (h *StaticHandler) LoginPageHtml(c echo.Context) error {
 
 func (h *StaticHandler) UserDetailPage(c echo.Context) error {
 	return c.File(UserDetailPagePath)
-}
-
-func (h *StaticHandler) UserDetailData(c echo.Context) error {
-	user, err := GetUserByUsername(c)
-	if err != nil {
-		return err
-	}
-	return c.JSON(http.StatusOK, user)
 }
 
 func (h *StaticHandler) LessonPageHtml(c echo.Context) error {

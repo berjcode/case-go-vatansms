@@ -5,6 +5,7 @@ import (
 	"berjcode/dependency/database"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
+	"encoding/json"
 	"net/http"
 	"time"
 
@@ -36,7 +37,12 @@ func Login(c echo.Context) error {
 		return echo.ErrUnauthorized
 	}
 
-	cookie := helpers.GetCookie("username", dbUser.UserName, time.Now().Add(24*time.Hour))
+	userJSON, err := json.Marshal(dbUser)
+	if err != nil {
+		return err
+	}
+
+	cookie := helpers.GetCookie("userdata", string(userJSON), time.Now().Add(24*time.Hour))
 	http.SetCookie(c.Response(), cookie)
 
 	return c.JSON(http.StatusOK, map[string]string{"message": constant.SuccessLogin})

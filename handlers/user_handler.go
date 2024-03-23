@@ -1,15 +1,15 @@
-// handlers/student_handler.go
-
 package handlers
 
 import (
+	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
+	"berjcode/dependency/dtos"
 	"berjcode/dependency/helpers"
 	"berjcode/dependency/models"
-	"errors"
 	"fmt"
 	"net/http"
+	"strconv"
 
 	"github.com/jinzhu/gorm"
 	"github.com/labstack/echo/v4"
@@ -30,9 +30,10 @@ func GetAllUsers(c echo.Context) error {
 }
 
 func CreateUser(c echo.Context) error {
-	var newUser models.User
 
-	if err := c.Bind(&newUser); err != nil {
+	var newUserCreateDto dtos.UserCreateDto
+
+	if err := c.Bind(&newUserCreateDto); err != nil {
 		return err
 	}
 
@@ -43,8 +44,7 @@ func CreateUser(c echo.Context) error {
 	defer db.Close()
 
 	var existingUser models.User
-
-	if err := db.Where("user_name = ?", newUser.UserName).Or("email = ?", newUser.Email).First(&existingUser).Error; err == nil {
+	if err := db.Where("user_name = ?", newUserCreateDto.UserName).Or("email = ?", newUserCreateDto.Email).First(&existingUser).Error; err == nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": constant.UserExisting})
 	}
 
@@ -53,36 +53,29 @@ func CreateUser(c echo.Context) error {
 		return err
 	}
 
-	hashedPassword := helpers.HashPassword(newUser.PasswordHash, salt)
-
-	newUser.Salt = salt
-	newUser.PasswordHash = hashedPassword
+	hashedPassword := helpers.HashPassword(newUserCreateDto.PasswordHash, salt)
+	var newUser = mappingUserCreateDtoToUser(newUserCreateDto, salt, hashedPassword)
 
 	if err := db.Create(&newUser).Error; err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusCreated, newUser)
+	return c.JSON(http.StatusCreated, true)
 }
 
 type CookieData struct {
 	UserName string `json:"UserName"`
 }
 
-func GetUserByUsername(c echo.Context) (models.User, error) {
+func getUserByID(id uint) (models.User, error) {
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return models.User{}, err
 	}
 	defer db.Close()
 
-	cookie, err := c.Cookie("username")
-	if err != nil {
-		return models.User{}, echo.NewHTTPError(http.StatusUnauthorized, constant.UserNameNotFound)
-	}
-	username := cookie.Value
 	var user models.User
-	if err := db.Where("user_name = ?", username).First(&user).Error; err != nil {
+	if err := db.Where("id = ?", id).First(&user).Error; err != nil {
 		if gorm.IsRecordNotFoundError(err) {
 			return models.User{}, echo.NewHTTPError(http.StatusNotFound, constant.UserNameNotFound)
 		}
@@ -93,22 +86,20 @@ func GetUserByUsername(c echo.Context) (models.User, error) {
 }
 
 func UpdateUser(c echo.Context) error {
+	fmt.Println(c)
+	var newUserUpdateDto dtos.UserUpdateDto
+	if err := c.Bind(&newUserUpdateDto); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidRequestValid)
+	}
 
-	username := c.FormValue("userName")
-	nameSurname := c.FormValue("nameSurname")
-	email := c.FormValue("email")
-	passwordHash := c.FormValue("passwordHash")
-	fmt.Println("formpasswordHash: ", passwordHash)
-	dbUser, err := GetUserByUsername(c)
+	dbUser, err := getUserByID(newUserUpdateDto.ID)
 	if err != nil {
-
 		return echo.NewHTTPError(http.StatusNotFound, constant.UserNameNotFound)
 	}
 
-	newPassword := helpers.HashPassword(passwordHash, dbUser.Salt)
-	dbUser.UserName = username
-	dbUser.NameSurname = nameSurname
-	dbUser.Email = email
+	newPassword := helpers.HashPassword(newUserUpdateDto.PasswordHash, dbUser.Salt)
+	dbUser.NameSurname = newUserUpdateDto.NameSurname
+	dbUser.Email = newUserUpdateDto.Email
 	dbUser.PasswordHash = newPassword
 
 	db, err := database.NewDB("dbconfig.json")
@@ -124,8 +115,15 @@ func UpdateUser(c echo.Context) error {
 	return c.JSON(http.StatusOK, map[string]string{"message": constant.UserUpdatedInfo})
 }
 
-func GetUserIDByUserName(c echo.Context) error {
-	username := c.QueryParam("username")
+func GetUserData(c echo.Context) error {
+
+	paramId := c.Param("id")
+	fmt.Println("id", paramId)
+	convertedID, err := strconv.ParseUint(paramId, 10, 64)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidLessonID)
+	}
 
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
@@ -133,17 +131,39 @@ func GetUserIDByUserName(c echo.Context) error {
 	}
 	defer db.Close()
 
-	var userIDs []uint
-	if err := db.Model(&models.User{}).Where("user_name = ?", username).Pluck("id", &userIDs).Error; err != nil {
-		if errors.Is(err, gorm.ErrRecordNotFound) {
-			return c.JSON(http.StatusOK, map[string]string{"message": constant.UserNameNotFoundForUserName})
-		}
+	user, err := getUserByID(uint(convertedID))
+
+	if err != nil {
 		return err
 	}
 
-	if len(userIDs) == 0 {
-		return c.JSON(http.StatusOK, map[string][]uint{"userIDs": nil})
+	var userDto = mappingUserToUserDto(user)
+
+	return c.JSON(http.StatusOK, userDto)
+}
+
+func mappingUserCreateDtoToUser(userCreateDto dtos.UserCreateDto, salt string, passwordHash string) models.User {
+
+	user := models.User{
+		UserName:     userCreateDto.UserName,
+		NameSurname:  userCreateDto.NameSurname,
+		Email:        userCreateDto.Email,
+		Salt:         salt,
+		PasswordHash: passwordHash,
+		EntityBase: common.EntityBase{
+			CreatedBy: userCreateDto.CreatedBy,
+		},
+	}
+	return user
+}
+
+func mappingUserToUserDto(user models.User) dtos.UserDto {
+	userDto := dtos.UserDto{
+		ID:          user.ID,
+		UserName:    user.UserName,
+		NameSurname: user.NameSurname,
+		Email:       user.Email,
 	}
 
-	return c.JSON(http.StatusOK, map[string][]uint{"userIDs": userIDs})
+	return userDto
 }

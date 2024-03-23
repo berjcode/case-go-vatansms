@@ -30,16 +30,14 @@ func main() {
 	e.POST("/users", handlers.CreateUser)
 	e.GET("/lessons", handlers.GetAllLessonsByUser)
 	e.GET("/lesson/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
-	e.POST("/userupdate", handlers.UpdateUser, mymiddleware.AuthMiddleware)
+	e.PUT("/updateusers", handlers.UpdateUser, mymiddleware.AuthMiddleware)
 	e.POST("/lesson", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
 	e.PUT("/updatelesson", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
-	e.GET("/userid", handlers.GetUserIDByUserName, mymiddleware.AuthMiddleware)
 	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
+	e.GET("/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
 
-	
 	e.GET("/", staticHandler.IndexHTML)
 	e.GET("/login", staticHandler.LoginPageHtml)
-	e.GET("/getuserdetail", staticHandler.UserDetailData)
 	e.GET("/plan", staticHandler.PlanPageHTML, mymiddleware.AuthMiddleware)
 	e.GET("/register", staticHandler.RegisterHTML)
 	e.GET("/lesson", staticHandler.LessonPageHtml, mymiddleware.AuthMiddleware)
