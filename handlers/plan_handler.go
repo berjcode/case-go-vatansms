@@ -65,6 +65,71 @@ func ExistsCheckPlan(startTime, endTime time.Time) error {
 	return nil
 }
 
+func UpdatePlan(c echo.Context) error {
+
+	var planUpdateDto dtos.PlanUpdateDto
+	if err := c.Bind(&planUpdateDto); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidRequestValid)
+	}
+
+	if err := helpers.UpdateValidatePlan(planUpdateDto); err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
+	}
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var existingPlan models.Plan
+	if err := db.Where("id = ?", planUpdateDto.ID).First(&existingPlan).Error; err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "Plan not found")
+	}
+
+	if err != nil {
+		return err
+	}
+
+	var newPlan = mappingPlanUpdateDtoToPlan(planUpdateDto)
+
+	if err := db.Save(&newPlan).Error; err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusNoContent, true)
+}
+
+// func getPlanDetailById(id uint) (models.Plan, error) {
+
+// 	db, err := database.NewDB("dbconfig.json")
+// 	if err != nil {
+// 		return models.Plan{}, err
+// 	}
+// 	defer db.Close()
+
+// 	var planData models.Plan
+// 	if err := db.First(&planData, id).Error; err != nil {
+// 		return models.Plan{}, err
+// 	}
+// 	return planData, nil
+// }
+
+func mappingPlanUpdateDtoToPlan(planUpdateDto dtos.PlanUpdateDto) models.Plan {
+	plan := models.Plan{
+		LessonID:     planUpdateDto.LessonID,
+		StartTime:    planUpdateDto.StartTime,
+		EndTime:      planUpdateDto.EndTime,
+		PlanStatusID: planUpdateDto.PlanStatusID,
+		EntityBase: common.EntityBase{
+			UpdatedOn: planUpdateDto.UpdatedOn,
+			UpdatedBy: planUpdateDto.UpdatedBy,
+		},
+	}
+
+	return plan
+}
+
 func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
 
 	lesson := models.Plan{
