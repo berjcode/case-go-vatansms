@@ -40,19 +40,23 @@ func CreateUserLesson(c echo.Context) error {
 }
 
 func GetAllLessonsByUser(c echo.Context) error {
-	userIDStr := c.QueryParam("userID")
+	userIDStr := c.Param("userid")
+	fmt.Println(userIDStr)
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
+	var newLesson []dtos.GetAllLessonDto
 	var lessons []models.Lesson
 	if err := db.Where("user_id = ?", userIDStr).Find(&lessons).Error; err != nil {
 		return err
 	}
 
-	return c.JSON(http.StatusOK, lessons)
+	newLesson = mappingLessonToGetAllLessonDto(lessons)
+
+	return c.JSON(http.StatusOK, newLesson)
 }
 
 func UpdateLesson(c echo.Context) error {
@@ -90,7 +94,7 @@ func UpdateLesson(c echo.Context) error {
 }
 
 func GetLessonById(c echo.Context) error {
-	paramId := c.QueryParam("id")
+	paramId := c.Param("id")
 	convertedID, err := strconv.ParseUint(paramId, 10, 64)
 
 	if err != nil {
@@ -152,4 +156,20 @@ func mappingLessonCreateDtoToLesson(lessonCreateDto dtos.LessonCreateDto) models
 		},
 	}
 	return lesson
+}
+
+func mappingLessonToGetAllLessonDto(lessons []models.Lesson) []dtos.GetAllLessonDto {
+	var getAllLessonDtos []dtos.GetAllLessonDto
+	for _, lesson := range lessons {
+		dto := dtos.GetAllLessonDto{
+			ID:                lesson.ID,
+			LessonName:        lesson.LessonName,
+			LessonDescription: lesson.LessonDescription,
+			UserID:            lesson.UserID,
+			CreatedOn:         lesson.CreatedOn,
+		}
+		getAllLessonDtos = append(getAllLessonDtos, dto)
+	}
+
+	return getAllLessonDtos
 }
