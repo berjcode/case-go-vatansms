@@ -21,6 +21,7 @@ func CreateUserLesson(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidRequestValid)
 	}
 
+	
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
