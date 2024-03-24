@@ -77,7 +77,7 @@ func UpdatePlanStatus(c echo.Context) error {
 
 	var planStatus = mappingPlanStatusUpdateToPlanStatus(planStatusUpdateDto)
 
-	if err := db.Save(&planStatus).Error; err != nil {
+	if err := db.Update(&planStatus).Error; err != nil {
 		return err
 	}
 

@@ -77,13 +77,18 @@ func UpdateLesson(c echo.Context) error {
 	}
 	defer db.Close()
 
-	if err := existsCheckLesson(lessonDtoUpdate.ID); err != nil {
+	lessonData, err := getLessonDetailById(lessonDtoUpdate.ID)
+
+	if err != nil {
 		return err
 	}
 
-	var lesson = mappingLessonUpdateDtoToLesson(lessonDtoUpdate)
+	lessonData.LessonName = lessonDtoUpdate.LessonName
+	lessonData.LessonDescription = lessonDtoUpdate.LessonDescription
+	lessonData.UpdatedBy = lessonDtoUpdate.UpdatedBy
+	lessonData.UpdatedOn = lessonDtoUpdate.UpdatedOn
 
-	if err := db.Save(&lesson).Error; err != nil {
+	if err := db.Save(&lessonData).Error; err != nil {
 		return err
 	}
 
@@ -148,27 +153,6 @@ func checkLessonRegister(lessonName string, userId uint) (bool, error) {
 	return count > 0, nil
 }
 
-func existsCheckLesson(id uint) error {
-
-	db, err := database.NewDB("dbconfig.json")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	var count int64
-	db.Where("id = ?", id).Table("lessons").Count(&count)
-
-	if err != nil {
-		return err
-	}
-	if count == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "böyle bir ders mevcut değil")
-	}
-
-	return nil
-}
-
 // mapping
 func mappingLessonToLessonDto(lesson models.Lesson) dtos.LessonDto {
 	lessonDto := dtos.LessonDto{
@@ -208,17 +192,4 @@ func mappingLessonToGetAllLessonDto(lessons []models.Lesson) []dtos.GetAllLesson
 	}
 
 	return getAllLessonDtos
-}
-
-func mappingLessonUpdateDtoToLesson(lessonUpdateDto dtos.LessonUpdateDto) models.Lesson {
-
-	lesson := models.Lesson{
-		LessonName:        lessonUpdateDto.LessonName,
-		LessonDescription: lessonUpdateDto.LessonDescription,
-		EntityBase: common.EntityBase{
-			UpdatedOn: lessonUpdateDto.UpdatedOn,
-			UpdatedBy: lessonUpdateDto.UpdatedBy,
-		},
-	}
-	return lesson
 }
