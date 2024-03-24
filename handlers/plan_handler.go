@@ -196,3 +196,55 @@ func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
 
 	return planDto
 }
+
+func GetPlanDetails(c echo.Context) error {
+	userID := c.Param("userid")
+	convertedUserID, err := strconv.ParseUint(userID, 10, 64)
+	var planDetails []models.PlanDetail
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	rows, err := db.Raw(`
+        SELECT 
+            pl.id, 
+            ls.lesson_name, 
+			DATE_FORMAT(pl.start_time, '%Y-%m-%d') AS start_date, 
+            DAYNAME(pl.start_time) AS start_day, 
+			DATE_FORMAT(pl.start_time, '%H:%i:%s') AS start_time,
+            DAYNAME(pl.end_time) AS end_day, 
+			DATE_FORMAT(pl.end_time, '%Y-%m-%d') AS end_date, 
+			DATE_FORMAT(pl.end_time, '%H:%i:%s') AS end_time,
+            ps.name AS plan_status_name, 
+            pl.created_on 
+        FROM 
+            newdb.plans AS pl
+        INNER JOIN 
+            newdb.lessons AS ls ON pl.lesson_id = ls.id
+        INNER JOIN 
+            newdb.plan_statuses AS ps ON pl.plan_status_id = ps.id
+		where ls.user_id = ?
+		ORDER BY
+    		pl.start_time ASC;
+
+    `, convertedUserID).Rows()
+	if err != nil {
+		return err
+	}
+	defer rows.Close()
+
+	for rows.Next() {
+		var planDetail models.PlanDetail
+		if err := rows.Scan(&planDetail.ID, &planDetail.LessonName, &planDetail.StartDay, &planDetail.StartDate, &planDetail.StartTime, &planDetail.EndDate, &planDetail.EndDay, &planDetail.EndTime, &planDetail.PlanStatusName, &planDetail.CreatedOn); err != nil {
+			return err
+		}
+		planDetails = append(planDetails, planDetail)
+	}
+	if err := rows.Err(); err != nil {
+		return err
+	}
+
+	return c.JSON(http.StatusOK, planDetails)
+}
