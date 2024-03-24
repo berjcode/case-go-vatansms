@@ -25,7 +25,7 @@ func CreatePlan(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
@@ -33,8 +33,8 @@ func CreatePlan(c echo.Context) error {
 
 	startTime := planCreateDto.StartTime
 	endTime := planCreateDto.EndTime
-	ExistsCheckPlan(startTime, endTime)
-	if err := ExistsCheckPlan(startTime, endTime); err != nil {
+	existsCheckPlanByTime(startTime, endTime)
+	if err := existsCheckPlanByTime(startTime, endTime); err != nil {
 		return err
 	}
 	var plan = mappingPlanCreateDtoToPlan(planCreateDto)
@@ -45,25 +45,6 @@ func CreatePlan(c echo.Context) error {
 
 	return c.JSON(http.StatusCreated, true)
 
-}
-func ExistsCheckPlan(startTime, endTime time.Time) error {
-
-	db, err := database.NewDB("dbconfig.json")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-	var count int64
-	db.Where("start_time < ?", endTime).Where("end_time > ?", startTime).Table("plans").Count(&count)
-
-	if err != nil {
-		return err
-	}
-	if count > 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, "Belirtilen zaman aralığında zaten bir plan mevcut")
-	}
-
-	return nil
 }
 
 func UpdatePlan(c echo.Context) error {
@@ -77,15 +58,21 @@ func UpdatePlan(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, err.Error())
 	}
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	var existingPlan models.Plan
-	if err := db.Where("id = ?", planUpdateDto.ID).First(&existingPlan).Error; err != nil {
-		return echo.NewHTTPError(http.StatusNotFound, "Plan not found")
+	if err := existsCheckCountPlan(planUpdateDto.ID); err != nil {
+		return err
+	}
+
+	startTime := planUpdateDto.StartTime
+	endTime := planUpdateDto.EndTime
+	existsCheckPlanByTime(startTime, endTime)
+	if err := existsCheckPlanByTime(startTime, endTime); err != nil {
+		return err
 	}
 
 	if err != nil {
@@ -101,102 +88,6 @@ func UpdatePlan(c echo.Context) error {
 	return c.JSON(http.StatusNoContent, true)
 }
 
-// func getPlanDetailById(id uint) (models.Plan, error) {
-
-// 	db, err := database.NewDB("dbconfig.json")
-// 	if err != nil {
-// 		return models.Plan{}, err
-// 	}
-// 	defer db.Close()
-
-// 	var planData models.Plan
-// 	if err := db.First(&planData, id).Error; err != nil {
-// 		return models.Plan{}, err
-// 	}
-// 	return planData, nil
-// }
-
-func mappingPlanUpdateDtoToPlan(planUpdateDto dtos.PlanUpdateDto) models.Plan {
-	plan := models.Plan{
-		LessonID:     planUpdateDto.LessonID,
-		StartTime:    planUpdateDto.StartTime,
-		EndTime:      planUpdateDto.EndTime,
-		PlanStatusID: planUpdateDto.PlanStatusID,
-		EntityBase: common.EntityBase{
-			UpdatedOn: planUpdateDto.UpdatedOn,
-			UpdatedBy: planUpdateDto.UpdatedBy,
-		},
-	}
-
-	return plan
-}
-
-func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
-
-	lesson := models.Plan{
-		LessonID:     planCreateDto.LessonID,
-		PlanStatusID: planCreateDto.PlanStatusID,
-		StartTime:    planCreateDto.StartTime,
-		EndTime:      planCreateDto.EndTime,
-		EntityBase: common.EntityBase{
-			CreatedBy: planCreateDto.CreatedBy,
-		},
-	}
-	return lesson
-}
-
-func GetPlanById(c echo.Context) error {
-	paramId := c.Param("id")
-	convertedID, err := strconv.ParseUint(paramId, 10, 64)
-
-	if err != nil {
-		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidLessonID)
-	}
-
-	db, err := database.NewDB("dbconfig.json")
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	plan, err := getPlanDetailById(uint(convertedID))
-
-	if err != nil {
-		return err
-	}
-
-	var planDto = mappingPlanToPlanDto(plan)
-
-	return c.JSON(http.StatusOK, planDto)
-}
-
-func getPlanDetailById(id uint) (models.Plan, error) {
-
-	db, err := database.NewDB("dbconfig.json")
-	if err != nil {
-		return models.Plan{}, err
-	}
-	defer db.Close()
-
-	var plan models.Plan
-	if err := db.First(&plan, id).Error; err != nil {
-		return models.Plan{}, err
-	}
-	return plan, nil
-}
-
-func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
-	planDto := dtos.PlanDto{
-		ID:           plan.ID,
-		LessonID:     plan.LessonID,
-		StartTime:    plan.StartTime,
-		EndTime:      plan.EndTime,
-		PlanStatusID: plan.PlanStatusID,
-	}
-
-	return planDto
-}
-
 func GetPlanDetails(c echo.Context) error {
 	userID := c.Param("userid")
 	convertedUserID, err := strconv.ParseUint(userID, 10, 64)
@@ -206,7 +97,7 @@ func GetPlanDetails(c echo.Context) error {
 
 	var planDetails []models.PlanDetail
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
@@ -251,4 +142,128 @@ func GetPlanDetails(c echo.Context) error {
 	}
 
 	return c.JSON(http.StatusOK, planDetails)
+}
+
+func GetPlanById(c echo.Context) error {
+	paramId := c.Param("id")
+	convertedID, err := strconv.ParseUint(paramId, 10, 64)
+
+	if err != nil {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidLessonID)
+	}
+
+	db, err := database.NewDB(constant.DbConfig)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	plan, err := getPlanDetailById(uint(convertedID))
+
+	if err != nil {
+		return err
+	}
+
+	var planDto = mappingPlanToPlanDto(plan)
+
+	return c.JSON(http.StatusOK, planDto)
+}
+
+// mapping
+func mappingPlanUpdateDtoToPlan(planUpdateDto dtos.PlanUpdateDto) models.Plan {
+	plan := models.Plan{
+		LessonID:     planUpdateDto.LessonID,
+		StartTime:    planUpdateDto.StartTime,
+		EndTime:      planUpdateDto.EndTime,
+		PlanStatusID: planUpdateDto.PlanStatusID,
+		EntityBase: common.EntityBase{
+			UpdatedOn: planUpdateDto.UpdatedOn,
+			UpdatedBy: planUpdateDto.UpdatedBy,
+		},
+	}
+
+	return plan
+}
+
+func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
+
+	lesson := models.Plan{
+		LessonID:     planCreateDto.LessonID,
+		PlanStatusID: planCreateDto.PlanStatusID,
+		StartTime:    planCreateDto.StartTime,
+		EndTime:      planCreateDto.EndTime,
+		EntityBase: common.EntityBase{
+			CreatedBy: planCreateDto.CreatedBy,
+		},
+	}
+	return lesson
+}
+func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
+	planDto := dtos.PlanDto{
+		ID:           plan.ID,
+		LessonID:     plan.LessonID,
+		StartTime:    plan.StartTime,
+		EndTime:      plan.EndTime,
+		PlanStatusID: plan.PlanStatusID,
+	}
+
+	return planDto
+}
+
+// private
+func getPlanDetailById(id uint) (models.Plan, error) {
+
+	db, err := database.NewDB(constant.DbConfig)
+	if err != nil {
+		return models.Plan{}, err
+	}
+	defer db.Close()
+
+	var plan models.Plan
+	if err := db.First(&plan, id).Error; err != nil {
+		return models.Plan{}, err
+	}
+	return plan, nil
+}
+
+func existsCheckPlanByTime(startTime, endTime time.Time) error {
+
+	db, err := database.NewDB(constant.DbConfig)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+	var count int64
+	db.Where("start_time < ?", endTime).Where("end_time > ?", startTime).Table("plans").Count(&count)
+
+	if err != nil {
+		return err
+	}
+
+	if count > 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.NotAlreadyExistsWithTime)
+	}
+
+	return nil
+}
+
+func existsCheckCountPlan(id uint) error {
+
+	db, err := database.NewDB(constant.DbConfig)
+	if err != nil {
+		return err
+	}
+	defer db.Close()
+
+	var count int64
+	db.Where("id = ?", id).Table("plans").Count(&count)
+
+	if err != nil {
+		return err
+	}
+	if count == 0 {
+		return echo.NewHTTPError(http.StatusBadRequest, constant.NotExistsRegisterPlan)
+	}
+
+	return nil
 }

@@ -7,5 +7,7 @@ const (
 
 	ErrorDatabase = "Veritabanı hatası"
 
-	ExistsRegisterLesson = "Ders Kayıdı Bulunuyor"
+	ExistsRegisterLesson     = "Ders Kayıdı Bulunuyor"
+	NotExistsRegisterPlan    = "böyle bir plan mevcut değil"
+	NotAlreadyExistsWithTime = "Belirtilen zaman aralığında zaten bir plan mevcut"
 )
