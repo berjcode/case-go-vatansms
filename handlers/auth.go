@@ -13,7 +13,7 @@ import (
 )
 
 func Login(c echo.Context) error {
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
