@@ -63,10 +63,12 @@ func UpdatePlanStatus(c echo.Context) error {
 	}
 	defer db.Close()
 
-	if err := existsCheckCountPlanStatus(planStatusUpdateDto.ID); err != nil {
+	planStatusData, err := getPlanStatusDetailById(planStatusUpdateDto.ID)
+
+	if err != nil {
 		return err
 	}
-
+	
 	exists, err := checkPlanStatusByName(planStatusUpdateDto.Name)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, constant.ErrorDatabase)
@@ -75,9 +77,11 @@ func UpdatePlanStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{constant.Message: constant.ExistsRegisterPlanStatus})
 	}
 
-	var planStatus = mappingPlanStatusUpdateToPlanStatus(planStatusUpdateDto)
+	planStatusData.Name = planStatusUpdateDto.Name
+	planStatusData.UpdatedBy = planStatusUpdateDto.UpdatedBy
+	planStatusData.UpdatedOn = planStatusUpdateDto.UpdatedOn
 
-	if err := db.Update(&planStatus).Error; err != nil {
+	if err := db.Save(&planStatusData).Error; err != nil {
 		return err
 	}
 
@@ -128,27 +132,6 @@ func GetAllPlanStatus(c echo.Context) error {
 }
 
 // private
-
-func existsCheckCountPlanStatus(id uint) error {
-
-	db, err := database.NewDB(constant.DbConfig)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	var count int64
-	db.Where("id = ?", id).Table("plan_statuses").Count(&count)
-
-	if err != nil {
-		return err
-	}
-	if count == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, constant.NotExistsRegisterPlanStatus)
-	}
-
-	return nil
-}
 
 func getPlanStatusDetailById(id uint) (models.PlanStatus, error) {
 
@@ -212,17 +195,6 @@ func mappingPlanStatusCreateDtoToPlanStatus(planStatusCreateDto dtos.PlanStatusC
 		Name: planStatusCreateDto.Name,
 		EntityBase: common.EntityBase{
 			CreatedBy: planStatusCreateDto.CreatedBy,
-		},
-	}
-	return planStatus
-}
-
-func mappingPlanStatusUpdateToPlanStatus(planStatusUpdateDto dtos.PlanStatusUpdateDto) models.PlanStatus {
-	planStatus := models.PlanStatus{
-		Name: planStatusUpdateDto.Name,
-		EntityBase: common.EntityBase{
-			UpdatedOn: planStatusUpdateDto.UpdatedOn,
-			UpdatedBy: planStatusUpdateDto.UpdatedBy,
 		},
 	}
 	return planStatus

@@ -64,8 +64,9 @@ func UpdatePlan(c echo.Context) error {
 	}
 	defer db.Close()
 
-	if err := existsCheckCountPlan(planUpdateDto.ID); err != nil {
-		return err
+	var existingPlan models.Plan
+	if err := db.Where("id = ?", planUpdateDto.ID).First(&existingPlan).Error; err != nil {
+		return echo.NewHTTPError(http.StatusNotFound, "Plan not found")
 	}
 
 	startTime := planUpdateDto.StartTime
@@ -75,13 +76,14 @@ func UpdatePlan(c echo.Context) error {
 		return err
 	}
 
-	if err != nil {
-		return err
-	}
+	existingPlan.LessonID = planUpdateDto.LessonID
+	existingPlan.StartTime = planUpdateDto.StartTime
+	existingPlan.EndTime = planUpdateDto.EndTime
+	existingPlan.PlanStatusID = planUpdateDto.PlanStatusID
+	existingPlan.UpdatedBy = planUpdateDto.UpdatedBy
+	existingPlan.UpdatedOn = planUpdateDto.UpdatedOn
 
-	var newPlan = mappingPlanUpdateDtoToPlan(planUpdateDto)
-
-	if err := db.Save(&newPlan).Error; err != nil {
+	if err := db.Save(&existingPlan).Error; err != nil {
 		return err
 	}
 
@@ -169,22 +171,6 @@ func GetPlanById(c echo.Context) error {
 	return c.JSON(http.StatusOK, planDto)
 }
 
-// mapping
-func mappingPlanUpdateDtoToPlan(planUpdateDto dtos.PlanUpdateDto) models.Plan {
-	plan := models.Plan{
-		LessonID:     planUpdateDto.LessonID,
-		StartTime:    planUpdateDto.StartTime,
-		EndTime:      planUpdateDto.EndTime,
-		PlanStatusID: planUpdateDto.PlanStatusID,
-		EntityBase: common.EntityBase{
-			UpdatedOn: planUpdateDto.UpdatedOn,
-			UpdatedBy: planUpdateDto.UpdatedBy,
-		},
-	}
-
-	return plan
-}
-
 func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
 
 	lesson := models.Plan{
@@ -242,27 +228,6 @@ func existsCheckPlanByTime(startTime, endTime time.Time) error {
 
 	if count > 0 {
 		return echo.NewHTTPError(http.StatusBadRequest, constant.NotAlreadyExistsWithTime)
-	}
-
-	return nil
-}
-
-func existsCheckCountPlan(id uint) error {
-
-	db, err := database.NewDB(constant.DbConfig)
-	if err != nil {
-		return err
-	}
-	defer db.Close()
-
-	var count int64
-	db.Where("id = ?", id).Table("plans").Count(&count)
-
-	if err != nil {
-		return err
-	}
-	if count == 0 {
-		return echo.NewHTTPError(http.StatusBadRequest, constant.NotExistsRegisterPlan)
 	}
 
 	return nil
