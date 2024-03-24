@@ -21,23 +21,44 @@ func CreateUserLesson(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidRequestValid)
 	}
 
-	
+	exists, err := CheckLessonRegister(newLesson.LessonName, newLesson.UserID)
+	if err != nil {
+		return echo.NewHTTPError(http.StatusInternalServerError, constant.ErrorDatabase)
+	}
+	if exists {
+		return c.JSON(http.StatusOK, map[string]string{"message": constant.ExistsRegisterLesson})
+	}
+
 	db, err := database.NewDB("dbconfig.json")
 	if err != nil {
 		return err
 	}
 	defer db.Close()
 
-	var existingLesson models.Lesson
-	if err := db.Where("lesson_name = ?", newLesson.LessonName).Where("user_id = ?", newLesson.UserID).First(&existingLesson).Error; err == nil {
-		return c.JSON(http.StatusBadRequest, map[string]string{"error": constant.ErrorMessageExistingLesson})
-	}
 	var lesson = mappingLessonCreateDtoToLesson(newLesson)
 	if err := db.Create(&lesson).Error; err != nil {
 		return err
 	}
 
 	return c.JSON(http.StatusCreated, true)
+}
+
+func CheckLessonRegister(lessonName string, userId uint) (bool, error) {
+
+	db, err := database.NewDB("dbconfig.json")
+	if err != nil {
+		return false, err
+	}
+	defer db.Close()
+
+	var count int
+	err = db.Model(&models.Lesson{}).Where("lesson_name = ? AND user_id = ?", lessonName, userId).Count(&count).Error
+
+	if err != nil {
+		return false, err
+	}
+
+	return count > 0, nil
 }
 
 func GetAllLessonsByUser(c echo.Context) error {
@@ -148,7 +169,6 @@ func mappingLessonToLessonDto(lesson models.Lesson) dtos.LessonDto {
 func mappingLessonCreateDtoToLesson(lessonCreateDto dtos.LessonCreateDto) models.Lesson {
 
 	lesson := models.Lesson{
-		ID:                lessonCreateDto.ID,
 		LessonName:        lessonCreateDto.LessonName,
 		LessonDescription: lessonCreateDto.LessonDescription,
 		UserID:            lessonCreateDto.UserID,

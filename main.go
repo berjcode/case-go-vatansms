@@ -26,15 +26,20 @@ func main() {
 	staticHandler := handlers.NewStaticHandler()
 	database.Migrate(db)
 	e.Static("/static", "static")
+	// Login
 	e.POST("/login", handlers.Login)
-	e.POST("/users", handlers.CreateUser)
-	e.GET("/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
-	e.GET("/lesson/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
-	e.PUT("/updateusers", handlers.UpdateUser, mymiddleware.AuthMiddleware)
-	e.POST("/lesson", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
-	e.PUT("/updatelesson", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
-	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
+
+	// User
 	e.GET("/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
+	e.PUT("/updateusers", handlers.UpdateUser, mymiddleware.AuthMiddleware)
+	e.POST("/users", handlers.CreateUser)
+
+	// Lesson
+	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
+	e.PUT("/updatelesson", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
+	e.POST("/lesson", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
+	e.GET("/lesson/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
+	e.GET("/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
 
 	//Plan Status
 	e.POST("/planstatus", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
@@ -46,7 +51,6 @@ func main() {
 	e.POST("/plan", handlers.CreatePlan, mymiddleware.AuthMiddleware)
 	e.PUT("/plan", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
 	e.GET("/plan/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
-
 	e.GET("/plan/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
 
 	// e.GET("/", staticHandler.IndexHTML)

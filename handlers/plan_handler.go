@@ -200,6 +200,10 @@ func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
 func GetPlanDetails(c echo.Context) error {
 	userID := c.Param("userid")
 	convertedUserID, err := strconv.ParseUint(userID, 10, 64)
+	if err != nil {
+		return err
+	}
+
 	var planDetails []models.PlanDetail
 
 	db, err := database.NewDB("dbconfig.json")
