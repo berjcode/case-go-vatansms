@@ -50,6 +50,7 @@ func main() {
 	e.PUT("/v1/plans", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
 	e.GET("/v1/plans/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
 	e.GET("/v1/plans/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
+	e.GET("/v1/plans/:userid/:starttime/:endtime", handlers.GetPlanDetailsByWhere, mymiddleware.AuthMiddleware)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

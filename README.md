@@ -45,6 +45,12 @@ Ardından  mysql tarafında veritabanını oluşturmalısınız .
  CREATE DATABASE newdb;
 
 ```
+## Zaman 
+```
+Kullanabilecek zaman birimi, kolaylık olsun diye verilmiştir. 
+"2024-03-23T10:30:00+03:00",
+```
+
 
 * Projenin ana dizininine gelin ve şu komutları verin 
 * Bu komut projeyi ayağa kaldıracaktır.
@@ -117,6 +123,25 @@ Request : http://localhost:8080/v1/plans/6  , HTTP Get, JSON, 6 = UserID
 ]
 Response : 200 Ok, []Plans
 
+* Belli aralığa göre plan getiren endpoint, Esnek tasarlanmıştır.
+
+Request : http://localhost:8080/v1/plans/6/2024-03-23T10:30:00+03:00/2024-04-10T10:30:00+03:00   , HTTP Get, JSON, 6 = UserID
+[
+    {
+        "ID": 20,
+        "LessonName": "Matematik",
+        "StartDay": "2024-03-23",
+        "StartDate": "Saturday",
+        "StartTime": "14:30:00",
+        "EndDay": "2024-03-23",
+        "EndDate": "Saturday",
+        "EndTime": "16:30:00",
+        "PlanStatusName": "tamamlandı",
+        "CreatedOn": "2024-03-25T03:20:22+03:00"
+    }
+]
+Response : 200 Ok, []Plans
+
 ```
 Veriye erişimi gorm ile yaptığım için ilk önce database'i kurmalısınız.
 Varlıkları oluştururken dikkat edilmesi gereken sıra!
@@ -151,6 +176,8 @@ Not:  Aynı dersi birden fazla kez kullanabilinsin diye veritabanı daha esnek  
 	e.PUT("/v1/plans", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
 	e.GET("/v1/plans/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
 	e.GET("/v1/plans/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
+    e.GET("/v1/plans/:userid/:starttime/:endtime", handlers.GetPlanDetailsByWhere, mymiddleware.AuthMiddleware)
+
 ```
 
 
