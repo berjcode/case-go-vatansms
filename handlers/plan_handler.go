@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/dtos"
 	"berjcode/dependency/helpers"
+	"berjcode/dependency/mapping"
 	"berjcode/dependency/models"
 	"net/http"
 	"strconv"
@@ -37,7 +37,7 @@ func CreatePlan(c echo.Context) error {
 	if err := existsCheckPlanByTime(startTime, endTime); err != nil {
 		return err
 	}
-	var plan = mappingPlanCreateDtoToPlan(planCreateDto)
+	var plan = mapping.MappingPlanCreateDtoToPlan(planCreateDto)
 
 	if err := db.Create(&plan).Error; err != nil {
 		return err
@@ -166,34 +166,9 @@ func GetPlanById(c echo.Context) error {
 		return err
 	}
 
-	var planDto = mappingPlanToPlanDto(plan)
+	var planDto = mapping.MappingPlanToPlanDto(plan)
 
 	return c.JSON(http.StatusOK, planDto)
-}
-
-func mappingPlanCreateDtoToPlan(planCreateDto dtos.PlanCreateDto) models.Plan {
-
-	lesson := models.Plan{
-		LessonID:     planCreateDto.LessonID,
-		PlanStatusID: planCreateDto.PlanStatusID,
-		StartTime:    planCreateDto.StartTime,
-		EndTime:      planCreateDto.EndTime,
-		EntityBase: common.EntityBase{
-			CreatedBy: planCreateDto.CreatedBy,
-		},
-	}
-	return lesson
-}
-func mappingPlanToPlanDto(plan models.Plan) dtos.PlanDto {
-	planDto := dtos.PlanDto{
-		ID:           plan.ID,
-		LessonID:     plan.LessonID,
-		StartTime:    plan.StartTime,
-		EndTime:      plan.EndTime,
-		PlanStatusID: plan.PlanStatusID,
-	}
-
-	return planDto
 }
 
 // private

@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/dtos"
 	"berjcode/dependency/helpers"
+	"berjcode/dependency/mapping"
 	"berjcode/dependency/models"
 	"net/http"
 	"strconv"
@@ -34,7 +34,7 @@ func CreateUserLesson(c echo.Context) error {
 	}
 	defer db.Close()
 
-	var lesson = mappingLessonCreateDtoToLesson(newLesson)
+	var lesson = mapping.MappingLessonCreateDtoToLesson(newLesson)
 	if err := db.Create(&lesson).Error; err != nil {
 		return err
 	}
@@ -56,7 +56,7 @@ func GetAllLessonsByUser(c echo.Context) error {
 		return err
 	}
 
-	newLesson = mappingLessonToGetAllLessonDto(lessons)
+	newLesson = mapping.MappingLessonToGetAllLessonDto(lessons)
 
 	return c.JSON(http.StatusOK, newLesson)
 }
@@ -115,7 +115,7 @@ func GetLessonById(c echo.Context) error {
 		return err
 	}
 
-	var lessonDto = mappingLessonToLessonDto(lesson)
+	var lessonDto = mapping.MappingLessonToLessonDto(lesson)
 
 	return c.JSON(http.StatusOK, lessonDto)
 }
@@ -154,42 +154,3 @@ func checkLessonRegister(lessonName string, userId uint) (bool, error) {
 }
 
 // mapping
-func mappingLessonToLessonDto(lesson models.Lesson) dtos.LessonDto {
-	lessonDto := dtos.LessonDto{
-		ID:                lesson.ID,
-		LessonName:        lesson.LessonName,
-		LessonDescription: lesson.LessonDescription,
-		UserID:            lesson.UserID,
-	}
-
-	return lessonDto
-}
-
-func mappingLessonCreateDtoToLesson(lessonCreateDto dtos.LessonCreateDto) models.Lesson {
-
-	lesson := models.Lesson{
-		LessonName:        lessonCreateDto.LessonName,
-		LessonDescription: lessonCreateDto.LessonDescription,
-		UserID:            lessonCreateDto.UserID,
-		EntityBase: common.EntityBase{
-			CreatedBy: lessonCreateDto.CreatedBy,
-		},
-	}
-	return lesson
-}
-
-func mappingLessonToGetAllLessonDto(lessons []models.Lesson) []dtos.GetAllLessonDto {
-	var getAllLessonDtos []dtos.GetAllLessonDto
-	for _, lesson := range lessons {
-		dto := dtos.GetAllLessonDto{
-			ID:                lesson.ID,
-			LessonName:        lesson.LessonName,
-			LessonDescription: lesson.LessonDescription,
-			UserID:            lesson.UserID,
-			CreatedOn:         lesson.CreatedOn,
-		}
-		getAllLessonDtos = append(getAllLessonDtos, dto)
-	}
-
-	return getAllLessonDtos
-}

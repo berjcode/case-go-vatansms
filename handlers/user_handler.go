@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/dtos"
 	"berjcode/dependency/helpers"
+	"berjcode/dependency/mapping"
 	"berjcode/dependency/models"
 	"fmt"
 	"net/http"
@@ -54,7 +54,7 @@ func CreateUser(c echo.Context) error {
 	}
 
 	hashedPassword := helpers.HashPassword(newUserCreateDto.PasswordHash, salt)
-	var newUser = mappingUserCreateDtoToUser(newUserCreateDto, salt, hashedPassword)
+	var newUser = mapping.MappingUserCreateDtoToUser(newUserCreateDto, salt, hashedPassword)
 
 	if err := db.Create(&newUser).Error; err != nil {
 		return err
@@ -137,33 +137,7 @@ func GetUserData(c echo.Context) error {
 		return err
 	}
 
-	var userDto = mappingUserToUserDto(user)
+	var userDto = mapping.MappingUserToUserDto(user)
 
 	return c.JSON(http.StatusOK, userDto)
-}
-
-func mappingUserCreateDtoToUser(userCreateDto dtos.UserCreateDto, salt string, passwordHash string) models.User {
-
-	user := models.User{
-		UserName:     userCreateDto.UserName,
-		NameSurname:  userCreateDto.NameSurname,
-		Email:        userCreateDto.Email,
-		Salt:         salt,
-		PasswordHash: passwordHash,
-		EntityBase: common.EntityBase{
-			CreatedBy: userCreateDto.CreatedBy,
-		},
-	}
-	return user
-}
-
-func mappingUserToUserDto(user models.User) dtos.UserDto {
-	userDto := dtos.UserDto{
-		ID:          user.ID,
-		UserName:    user.UserName,
-		NameSurname: user.NameSurname,
-		Email:       user.Email,
-	}
-
-	return userDto
 }

@@ -1,11 +1,11 @@
 package handlers
 
 import (
-	"berjcode/dependency/common"
 	"berjcode/dependency/constant"
 	"berjcode/dependency/database"
 	"berjcode/dependency/dtos"
 	"berjcode/dependency/helpers"
+	"berjcode/dependency/mapping"
 	"berjcode/dependency/models"
 	"net/http"
 	"strconv"
@@ -38,7 +38,7 @@ func CreatePlanStatus(c echo.Context) error {
 		return c.JSON(http.StatusOK, map[string]string{constant.Message: constant.ExistsRegisterPlanStatus})
 	}
 
-	var planStatus = mappingPlanStatusCreateDtoToPlanStatus(planStatusCreateDto)
+	var planStatus = mapping.MappingPlanStatusCreateDtoToPlanStatus(planStatusCreateDto)
 	if err := db.Create(&planStatus).Error; err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ func UpdatePlanStatus(c echo.Context) error {
 	if err != nil {
 		return err
 	}
-	
+
 	exists, err := checkPlanStatusByName(planStatusUpdateDto.Name)
 	if err != nil {
 		return echo.NewHTTPError(http.StatusInternalServerError, constant.ErrorDatabase)
@@ -108,7 +108,7 @@ func GetPlanStatusById(c echo.Context) error {
 		return err
 	}
 
-	var planStatusDto = mappingPlanStatusToPlanStatusDto(planStatus)
+	var planStatusDto = mapping.MappingPlanStatusToPlanStatusDto(planStatus)
 
 	return c.JSON(http.StatusOK, planStatusDto)
 }
@@ -126,7 +126,7 @@ func GetAllPlanStatus(c echo.Context) error {
 		return err
 	}
 
-	getAllPlanStatusDto = mappingPlanStatusToGetAllPlanStatusDto(planStatus)
+	getAllPlanStatusDto = mapping.MappingPlanStatusToGetAllPlanStatusDto(planStatus)
 
 	return c.JSON(http.StatusOK, getAllPlanStatusDto)
 }
@@ -164,38 +164,4 @@ func checkPlanStatusByName(planName string) (bool, error) {
 	}
 
 	return count > 0, nil
-}
-
-// mapping
-func mappingPlanStatusToPlanStatusDto(planStatus models.PlanStatus) dtos.PlanStatusDto {
-	planStatusDto := dtos.PlanStatusDto{
-		ID:   planStatus.ID,
-		Name: planStatus.Name,
-	}
-
-	return planStatusDto
-}
-
-func mappingPlanStatusToGetAllPlanStatusDto(planStatuses []models.PlanStatus) []dtos.GetAllPlanStatusDto {
-	var getAllPlanStatusDto []dtos.GetAllPlanStatusDto
-	for _, planStatus := range planStatuses {
-		dto := dtos.GetAllPlanStatusDto{
-			ID:   planStatus.ID,
-			Name: planStatus.Name,
-		}
-		getAllPlanStatusDto = append(getAllPlanStatusDto, dto)
-	}
-
-	return getAllPlanStatusDto
-}
-
-func mappingPlanStatusCreateDtoToPlanStatus(planStatusCreateDto dtos.PlanStatusCreateDto) models.PlanStatus {
-
-	planStatus := models.PlanStatus{
-		Name: planStatusCreateDto.Name,
-		EntityBase: common.EntityBase{
-			CreatedBy: planStatusCreateDto.CreatedBy,
-		},
-	}
-	return planStatus
 }
