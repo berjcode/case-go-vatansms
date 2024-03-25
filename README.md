@@ -22,7 +22,7 @@ rest api .go 1.21.3
 Master ve develop olmak üzere 2  farklı branch vardır.
 # İndirme 
 ```
-  git clone  
+  git clone   https://github.com/berjcode/case-go-vatansms.git
 ```
 
 ## Database Kurulumu
