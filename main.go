@@ -27,31 +27,31 @@ func main() {
 	database.Migrate(db)
 	e.Static("/static", "static")
 	// Login
-	e.POST("/login", handlers.Login)
+	e.POST("/v1/auth", handlers.Login)
 
 	// User
-	e.GET("/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
-	e.PUT("/updateusers", handlers.UpdateUser, mymiddleware.AuthMiddleware)
-	e.POST("/users", handlers.CreateUser)
+	e.GET("/v1/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/users", handlers.UpdateUser, mymiddleware.AuthMiddleware)
+	e.POST("/v1/users", handlers.CreateUser)
 
 	// Lesson
-	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
-	e.PUT("/updatelesson", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
-	e.POST("/lesson", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
-	e.GET("/lesson/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
-	e.GET("/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/lessons", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/lessons", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
+	e.POST("/v1/lessons", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
+	e.GET("/v1/lessons/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
+	e.GET("/v1/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
 
 	//Plan Status
-	e.POST("/planstatus", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
-	e.PUT("/planstatus", handlers.UpdatePlanStatus, mymiddleware.AuthMiddleware)
-	e.GET("/planstatus", handlers.GetAllPlanStatus, mymiddleware.AuthMiddleware)
-	e.GET("/planstatus/:id", handlers.GetPlanStatusById, mymiddleware.AuthMiddleware)
+	e.POST("/v1/planstatuses", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/planstatuses", handlers.UpdatePlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/v1/planstatuses", handlers.GetAllPlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/v1/planstatuses/:id", handlers.GetPlanStatusById, mymiddleware.AuthMiddleware)
 
 	//Plan
-	e.POST("/plan", handlers.CreatePlan, mymiddleware.AuthMiddleware)
-	e.PUT("/plan", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
-	e.GET("/plan/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
-	e.GET("/plan/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
+	e.POST("/v1/plans", handlers.CreatePlan, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/plans", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
+	e.GET("/v1/plans/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
+	e.GET("/v1/plans/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
 
 	// e.GET("/", staticHandler.IndexHTML)
 	// e.GET("/login", staticHandler.LoginPageHtml)
