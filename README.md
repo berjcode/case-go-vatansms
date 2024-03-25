@@ -53,16 +53,9 @@ Ardından  mysql tarafında veritabanını oluşturmalısınız .
 ```
 
 ```
-Uygulama İlk ayağa kalkarken seed data eklenmiştir.
-Not: İlk Önce Login Olunuz. 
-Login EndPoint :  http://localhost:8080/login
-{
-  "userNameAndEmail": "aaa",
-  "password": "aaa"
-}
 
-Bir sorunla karşılaşırsanız kullanıcı oluşturma JSON:
-Create User Endpoint: http://localhost:8080/users
+Kullanıcı oluşturma JSON:
+Create User Endpoint: http://localhost:8080/v1/users
 {
     "UserName": "aaaa",
     "NameSurname": "aaaa",
@@ -71,13 +64,22 @@ Create User Endpoint: http://localhost:8080/users
     "CreatedBy" : "Admin"
 }
 
-Create PlanStatus Endpoint :  http://localhost:8080/planstatus
+
+Not: İlk Önce Login Olunuz. 
+Login EndPoint :  http://localhost:8080/v1/auth
+{
+  "userNameAndEmail": "aaa",
+  "password": "aaa"
+}
+
+
+Create PlanStatus Endpoint :  http://localhost:8080/v1/planstatuses
 {
     "Name": "tammalandı",
     "CreatedBy": "Admin"
 }
 
-Create Lesson Endpoint : http://localhost:8080/lessons
+Create Lesson Endpoint : http://localhost:8080/v1/lessons
 {
     "LessonName": "felsefe",
     "LessonDescription": "felsefe iyidir",
@@ -85,7 +87,7 @@ Create Lesson Endpoint : http://localhost:8080/lessons
     "CreatedBy" : "Admin"
 }
 
-Create PlanEndPoint : http://localhost:8080/plan  , HTTP POST, JSON
+Create PlanEndPoint : http://localhost:8080/v1/plans  , HTTP POST, JSON
 
 {
     "LessonID" : 23,
@@ -98,7 +100,7 @@ Response : 201 Created, True
 
 
 
-Request : http://localhost:8080/plan/6  , HTTP Get, JSON, 6 = UserID
+Request : http://localhost:8080/v1/plans/6  , HTTP Get, JSON, 6 = UserID
 [
     {
         "ID": 20,
@@ -129,29 +131,26 @@ Not:  Aynı dersi birden fazla kez kullanabilinsin diye veritabanı daha esnek  
 ```
 ## Endpointler
 ```
-    // User
-	e.GET("/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
-	e.PUT("/updateusers", handlers.UpdateUser, mymiddleware.AuthMiddleware)
-	e.POST("/users", handlers.CreateUser)
+    e.POST("/v1/auth", handlers.Login)
+	
+	e.GET("/v1/users/:id", handlers.GetUserData, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/users", handlers.UpdateUser, mymiddleware.AuthMiddleware)
+	e.POST("/v1/users", handlers.CreateUser)
 
-	// Lesson
-	e.PUT("/lesson", staticHandler.LessonDetailPageHtml, mymiddleware.AuthMiddleware)
-	e.PUT("/updatelesson", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
-	e.POST("/lesson", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
-	e.GET("/lesson/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
-	e.GET("/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/lessons", handlers.UpdateLesson, mymiddleware.AuthMiddleware)
+	e.POST("/v1/lessons", handlers.CreateUserLesson, mymiddleware.AuthMiddleware)
+	e.GET("/v1/lessons/:id", handlers.GetLessonById, mymiddleware.AuthMiddleware)
+	e.GET("/v1/lessons/user/:userid", handlers.GetAllLessonsByUser, mymiddleware.AuthMiddleware)
 
-	//Plan Status
-	e.POST("/planstatus", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
-	e.PUT("/planstatus", handlers.UpdatePlanStatus, mymiddleware.AuthMiddleware)
-	e.GET("/planstatus", handlers.GetAllPlanStatus, mymiddleware.AuthMiddleware)
-	e.GET("/planstatus/:id", handlers.GetPlanStatusById, mymiddleware.AuthMiddleware)
+	e.POST("/v1/planstatuses", handlers.CreatePlanStatus, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/planstatuses", handlers.UpdatePlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/v1/planstatuses", handlers.GetAllPlanStatus, mymiddleware.AuthMiddleware)
+	e.GET("/v1/planstatuses/:id", handlers.GetPlanStatusById, mymiddleware.AuthMiddleware)
 
-	//Plan
-	e.POST("/plan", handlers.CreatePlan, mymiddleware.AuthMiddleware)
-	e.PUT("/plan", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
-	e.GET("/plan/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
-	e.GET("/plan/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
+	e.POST("/v1/plans", handlers.CreatePlan, mymiddleware.AuthMiddleware)
+	e.PUT("/v1/plans", handlers.UpdatePlan, mymiddleware.AuthMiddleware)
+	e.GET("/v1/plans/:id", handlers.GetPlanById, mymiddleware.AuthMiddleware)
+	e.GET("/v1/plans/:userid", handlers.GetPlanDetails, mymiddleware.AuthMiddleware)
 ```
 
 
