@@ -16,7 +16,7 @@ func ValidateLoginForm(loginModel models.UserLogin) error {
 	}
 
 	if len(loginModel.UsernameAndEmail) < 2 && len(loginModel.UsernameAndEmail) > 30 {
-		return errors.New(constant.MustBeLargerTwoCharacters)
+		return errors.New(constant.MustBetweenTwoAndthirtyCharacters)
 	}
 
 	return nil

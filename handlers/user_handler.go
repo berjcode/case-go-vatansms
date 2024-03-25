@@ -17,7 +17,7 @@ import (
 
 func GetAllUsers(c echo.Context) error {
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
@@ -37,7 +37,7 @@ func CreateUser(c echo.Context) error {
 		return err
 	}
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
@@ -68,7 +68,7 @@ type CookieData struct {
 }
 
 func getUserByID(id uint) (models.User, error) {
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return models.User{}, err
 	}
@@ -102,7 +102,7 @@ func UpdateUser(c echo.Context) error {
 	dbUser.Email = newUserUpdateDto.Email
 	dbUser.PasswordHash = newPassword
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}
@@ -125,7 +125,7 @@ func GetUserData(c echo.Context) error {
 		return echo.NewHTTPError(http.StatusBadRequest, constant.InvalidLessonID)
 	}
 
-	db, err := database.NewDB("dbconfig.json")
+	db, err := database.NewDB(constant.DbConfig)
 	if err != nil {
 		return err
 	}

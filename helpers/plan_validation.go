@@ -13,11 +13,11 @@ func CreateValidatePlan(planCreateDto dtos.PlanCreateDto) error {
 	}
 
 	if len(planCreateDto.CreatedBy) < 2 || len(planCreateDto.CreatedBy) > 50 {
-		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
+		return errors.New(constant.MustBetweenTwoAndFiftyCharacters)
 	}
 
 	if planCreateDto.EndTime.Before(planCreateDto.StartTime) {
-		return errors.New("end time , startime'dan küçük olamaz")
+		return errors.New(constant.EntTimeCannotBeLessStartTime)
 	}
 
 	return nil
@@ -30,11 +30,11 @@ func UpdateValidatePlan(planUpdateDto dtos.PlanUpdateDto) error {
 	}
 
 	if len(planUpdateDto.UpdatedBy) < 2 || len(planUpdateDto.UpdatedBy) > 50 {
-		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
+		return errors.New(constant.MustBetweenTwoAndFiftyCharacters)
 	}
 
 	if planUpdateDto.EndTime.Before(planUpdateDto.StartTime) {
-		return errors.New("end time , startime'dan küçük olamaz")
+		return errors.New(constant.EntTimeCannotBeLessStartTime)
 	}
 
 	return nil

@@ -13,11 +13,11 @@ func UpdateValidateLesson(lessonDto dtos.LessonUpdateDto) error {
 	}
 
 	if len(lessonDto.LessonName) < 2 || len(lessonDto.LessonName) > 100 {
-		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
+		return errors.New(constant.MustBetweenTwoAndOneHundredCharacters)
 	}
 
 	if len(lessonDto.LessonDescription) < 2 || len(lessonDto.LessonDescription) > 30 {
-		return errors.New(constant.MustBeLargerTwoCharacters)
+		return errors.New(constant.MustBetweenTwoAndthirtyCharacters)
 	}
 
 	return nil

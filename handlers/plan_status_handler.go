@@ -132,7 +132,6 @@ func GetAllPlanStatus(c echo.Context) error {
 }
 
 // private
-
 func getPlanStatusDetailById(id uint) (models.PlanStatus, error) {
 
 	db, err := database.NewDB(constant.DbConfig)

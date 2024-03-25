@@ -13,7 +13,7 @@ func UpdateValidatePlanStatus(planStatusUpdateDto dtos.PlanStatusUpdateDto) erro
 	}
 
 	if len(planStatusUpdateDto.Name) < 2 || len(planStatusUpdateDto.Name) > 50 {
-		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
+		return errors.New(constant.MustBetweenTwoAndFiftyCharacters)
 	}
 	return nil
 }
@@ -25,7 +25,7 @@ func CreateValidatePlanStatus(planStatusCreateDto dtos.PlanStatusCreateDto) erro
 	}
 
 	if len(planStatusCreateDto.Name) < 2 || len(planStatusCreateDto.Name) > 50 {
-		return errors.New(constant.MustBetweenTwoAndTwentyCharacters)
+		return errors.New(constant.MustBetweenTwoAndFiftyCharacters)
 	}
 	return nil
 }

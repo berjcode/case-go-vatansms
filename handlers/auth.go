@@ -45,5 +45,5 @@ func Login(c echo.Context) error {
 	cookie := helpers.GetCookie("userdata", string(userJSON), time.Now().Add(24*time.Hour))
 	http.SetCookie(c.Response(), cookie)
 
-	return c.JSON(http.StatusOK, map[string]string{"message": constant.SuccessLogin})
+	return c.JSON(http.StatusOK, map[string]string{constant.Message: constant.SuccessLogin})
 }
