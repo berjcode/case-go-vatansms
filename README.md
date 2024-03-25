@@ -1,4 +1,4 @@
-# Vatan Sms  Öğrenci Bilgi Sistemi Case  
+# Vatan Sms  Öğrenci Ders Programı -  Case  
 
 
 Merhabalar,  Bana sunduğunuz  fırsat için teşekkür ederim. İstenen özellikler sağlamaya çalıştım. 
