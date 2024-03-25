@@ -4,7 +4,7 @@
 Merhabalar,  Bana sunduğunuz  fırsat için teşekkür ederim. İstenen özellikler sağlamaya çalıştım. 
 Eksikliklerim olabilir. 
 
-Not: frontend tarafını'da tasarlamaya çalıştım bu yüzden çok fazla zaman kaybettim. Genel yazılım bilgimi tam anlamıyla yansıtamadım.
+Not: frontend tarafınıda tasarlamaya çalıştım bu yüzden çok fazla zaman kaybettim. Genel yazılım bilgimi tam anlamıyla yansıtamadım.
 
 ## Mimari 
 -Standart Go Mimarisi 
@@ -12,7 +12,6 @@ Not: frontend tarafını'da tasarlamaya çalıştım bu yüzden çok fazla zaman
 Go tarafında çalışmadığım için çok fazla go ile mimari geliştirmedim. Bu  yüzden standart bir yapı ile case'i tamamladım.
 
 database.go => handler.go => main.go 
-
 
 
 # Yapı ve Versiyon
